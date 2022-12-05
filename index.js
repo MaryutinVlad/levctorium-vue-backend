@@ -4,6 +4,7 @@ const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const path = require('path')
 
+const userRouter = require('./routes/user')
 const { PORT = 5000 } = process.env
 const app = express()
 
@@ -16,6 +17,8 @@ mongoose.connect('mongodb://localhost:27017/lectorium-vue-db')
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(morgan('dev'))
+
+app.use('/login', userRouter)
 
 app.listen(app.get('port'), () => {
   console.log(`listening on port ${app.get('port')}`)

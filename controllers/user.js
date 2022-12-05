@@ -6,21 +6,38 @@ const User = require('../models/Users')
 const BadRequest = require('../errors/BadRequest')
 const AuthError = require('../errors/AuthError')
 
-module.exports.signUp = (req, res, next) => {
+module.exports.signUp = async (req, res, next) => {
   const { email, password, username } = req.body
+  const hash = await bcrypt.hash(password, 10)
+  const user = new User({...req.body, password: hash})
 
-  //there maybe should be validation for userdata
+  await user.save()
+  
+  return res.json(await User.find(user))
+}
 
-  return bcrypt.hash(password, 10)
-    .then(hash => {
-      User.create({
-        email,
-        password: hash,
-        username
-      }, { new: true })
-    })
-    .then(newUser => res.send(newUser))
-    .catch(err => {
-      return next(err)
-    })
+module.exports.signIn = async (req, res, next) => {
+  const { email, password } = req.body
+  const user = await User.findOne({ email }).select('+password')
+
+  const matched = await bcrypt.compare(password, user.password)
+
+   if (matched) {
+    const token = jwt.sign(
+      { _id: user._id  },
+      'some-secret-key',//
+      { expiresIn: '5d' }
+    )
+
+    return res.json({ token })
+  } else {
+
+    return res.json({ error: 'wrong data'})
+  }
+}
+
+module.exports.validate = async (req, res, next) => {
+  const user = await User.findOne({ _id: req.params.id })
+  
+  return res.json(user)
 }

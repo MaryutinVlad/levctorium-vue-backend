@@ -1,5 +1,11 @@
 const userRouter = require('express').Router()
 
-import { signUp } from '../controllers/user'
+const { signUp, signIn, validate } = require('../controllers/user')
 
-userRouter.post('/signUp', signUp)
+userRouter.post('/sign-up', signUp)
+
+userRouter.post('/sign-in', signIn)
+
+userRouter.get('/:id', validate)
+
+module.exports = userRouter
